@@ -23,11 +23,15 @@ function App() {
   });
 
   return (
-    <div>
-      <p>
-        <label htmlFor="number">Number of rectangles:</label>
+    <div style={{ margin: 16 }}>
+      <p className="input">
+        <label className="label" htmlFor="number">
+          Number of rectangles:
+        </label>
         <input
           id="number"
+          type="number"
+          className="input__field"
           value={count}
           onChange={(e) => {
             const value = e.target.value;
@@ -36,12 +40,14 @@ function App() {
         />
       </p>
 
-      <b id="errors" style={{ color: 'tomato' }}>
+      <b className="type type--small type--medium" style={{ color: 'tomato' }}>
         {error}
       </b>
 
       <p>
-        <button onClick={onDraw}>Draw Confetti</button>
+        <button className="button button--primary" onClick={onDraw}>
+          Draw Confetti
+        </button>
       </p>
     </div>
   );
