@@ -3,5 +3,5 @@
   "name": "confetti",
   "id": "843186203578433973",
   "main": "plugin.ts",
-  "ui": "ui.ts"
+  "ui": "ui.tsx"
 }
