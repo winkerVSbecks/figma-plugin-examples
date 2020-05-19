@@ -1,7 +1,16 @@
 {
   "api": "1.0.0",
-  "name": "confetti",
+  "name": "Pack",
   "id": "843186203578433973",
   "main": "plugin.ts",
-  "ui": "ui.ts"
+  "menu": [
+    {
+      "name": "Circle",
+      "command": "circle"
+    },
+    {
+      "name": "Square",
+      "command": "square"
+    }
+  ]
 }

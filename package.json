@@ -1,0 +1,6 @@
+{
+  "version": "1.0.0",
+  "dependencies": {
+    "pack-spheres": "^1.0.4"
+  }
+}

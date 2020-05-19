@@ -1,80 +1,82 @@
-figma.showUI(__html__);
+import pack from 'pack-spheres';
 
-figma.ui.onmessage = (msg) => {
-  let status;
+drawPack();
+figma.closePlugin();
 
-  if (msg.type === 'create-confetti' && typeof msg.count == 'number') {
-    status = createConfetti(msg.count);
-  }
-
-  // Make sure to close the plugin when you're done. Otherwise the plugin will
-  // keep running, which shows the cancel button at the bottom of the screen.
-  if (status !== 'error') {
-    figma.closePlugin();
-  }
-};
-
-function createConfetti(count: number): string {
+function drawPack() {
   // Make sure the user has only selected one node
   if (figma.currentPage.selection.length !== 1) {
-    figma.ui.postMessage({
-      type: 'error',
-      value: 'select a frame to render into',
-    });
-
-    return 'error';
+    console.error('select a frame to render into');
   }
 
-  const frameNode = figma.currentPage.selection[0];
+  const frameNode = figma.currentPage.selection[0] as FrameNode;
 
   // Ensure that the selected node is a frame
   if (frameNode.type !== 'FRAME') {
-    figma.ui.postMessage({
-      type: 'error',
-      value: 'select a frame to render into',
-    });
-
-    return 'error';
+    console.error('select a frame to render into');
   }
-
-  const colors = [
-    { r: 0.094, g: 0.627, b: 0.984 },
-    { r: 0.482, g: 0.38, b: 1 },
-    { r: 1, g: 0, b: 1 },
-    { r: 0.105, g: 0.768, b: 0.49 },
-    { r: 0.949, g: 0.282, b: 0.133 },
-    { r: 1, g: 0.921, b: 0 },
-  ];
 
   const width = frameNode.width;
   const height = frameNode.height;
 
+  const scale = Math.min(width, height);
+  const frameBounds = [0, width, 0, height];
+  console.log(frameBounds);
+
   const randomRange = (low: number, high: number): number => Math.floor(Math.random() * high) + low;
-  const randomColor = () => colors[Math.floor(Math.random() * colors.length)];
 
-  for (let index = 0; index < count; index++) {
-    // Create a rectangle
-    const rect = figma.createRectangle();
+  const circles = pack({
+    dimensions: 2,
+    packAttempts: 500,
+    maxCount: 1000,
+    bounds: scale,
+    minRadius: 0.02 * scale,
+    maxRadius: 0.5 * scale,
+    padding: 0.0025 * scale,
+    sample: () => [
+      randomRange(0, width),
+      randomRange(0, height),
+    ],
+    outside: (position, radius) => {
+      const xInBounds = (position[0] - radius >= 0) && (position[0] + radius <= width);
+      const yInBounds = (position[1] - radius >= 0) && (position[1] + radius <= height);
+      return !xInBounds || !yInBounds;
+    }
+  });
 
-    // Assign a random width and height to the rectangle
-    const w = randomRange(width * 0.01, width * 0.05);
-    const h = randomRange(height * 0.01, height * 0.05);
-    rect.resize(w, h);
+  const shapes = {
+    circle: drawCircle,
+    square: drawSquare,
+  };
 
-    // Randomly position the rectangle within the frame
-    rect.x = randomRange(0, width);
-    rect.y = randomRange(0, height);
-
-    // Set a random color
-    rect.fills = [
-      {
-        type: 'SOLID',
-        color: randomColor(),
-      },
-    ];
-
-    // Add the rectangle to the frame
-    frameNode.appendChild(rect);
+  for (let circle of circles) {
+    const node = shapes[figma.command](circle);
+    frameNode.appendChild(node);
   }
-  return 'success';
+}
+
+function drawCircle(circle) {
+  const node = figma.createEllipse();
+
+  node.x = circle.position[0] - circle.radius;
+  node.y = circle.position[1] - circle.radius;
+  node.resize(circle.radius * 2, circle.radius * 2);
+
+  node.fills = [{ type: 'SOLID', color: { r: 0.2, g: 0.2, b: 0.2 } }];
+
+  return node;
+}
+
+function drawSquare(circle) {
+  const node = figma.createRectangle();
+
+  const radius = circle.radius * (2 ** 0.5) / 2;
+
+  node.x = circle.position[0] - radius;
+  node.y = circle.position[1] - radius;
+  node.resize(radius * 2, radius * 2);
+
+  node.fills = [{ type: 'SOLID', color: { r: 0.2, g: 0.2, b: 0.2 } }];
+
+  return node;
 }
