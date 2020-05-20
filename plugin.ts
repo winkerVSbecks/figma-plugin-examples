@@ -1,6 +1,7 @@
 import pack from 'pack-spheres';
 
 drawPack();
+
 figma.closePlugin();
 
 function drawPack() {
@@ -16,12 +17,18 @@ function drawPack() {
     console.error('select a frame to render into');
   }
 
+  // Clear contents of the frame
+  frameNode.findAll().map((node: SceneNode) => {
+    if (node && !node.removed) {
+      node.remove();
+    }
+  });
+
   const width = frameNode.width;
   const height = frameNode.height;
 
   const scale = Math.min(width, height);
   const frameBounds = [0, width, 0, height];
-  console.log(frameBounds);
 
   const randomRange = (low: number, high: number): number => Math.floor(Math.random() * high) + low;
 
@@ -49,10 +56,15 @@ function drawPack() {
     square: drawSquare,
   };
 
+  const type = figma.command === 'regenerate' ? frameNode.getPluginData('type') : figma.command;
+
   for (let circle of circles) {
-    const node = shapes[figma.command](circle);
+    const node = shapes[type](circle);
     frameNode.appendChild(node);
   }
+
+  frameNode.setRelaunchData({ 'regenerate': 'regenerate the packing effect' });
+  frameNode.setPluginData('type', type);
 }
 
 function drawCircle(circle) {

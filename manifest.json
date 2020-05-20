@@ -12,5 +12,12 @@
       "name": "Square",
       "command": "square"
     }
+  ],
+  "relaunchButtons": [
+    {
+      "command": "regenerate",
+      "name": "Regenerate",
+      "multipleSelection": true
+    }
   ]
 }
